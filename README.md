@@ -22,6 +22,7 @@ pip install requirements.txt
 Para ejecutar:
 
 ```
+source env/bin/activate
 cd dispatcherapp
 python manage.py runserver
 ```
