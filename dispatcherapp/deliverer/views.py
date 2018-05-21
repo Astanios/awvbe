@@ -21,6 +21,10 @@ class JSONResponse(HttpResponse):
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
 
+def matchSite(site):
+    result = re.match(r'^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$', site)
+    return bool(result)
+
 @csrf_exempt
 def home(request):  
     if request.method == 'GET':
@@ -31,15 +35,28 @@ def home(request):
 @csrf_exempt
 def jsontest(request):
     data = json.loads(request.body)
-    response = {
-        'url': data['query'],
-        'versions': 2,
-        'list': [
-            datetime.datetime.now(),
-            datetime.datetime(1943,3, 13, 0, 0)
-        ]
-    }
+    if matchSite(data['query']):
+        response = {
+            'type': 'url',
+            'url': data['query'],
+            'versions': 2,
+            'list': [
+                datetime.datetime.now(),
+                datetime.datetime(2009,3, 13, 0, 0)
+            ]
+        }
+    else:
+        response = {
+            'type': 'keyword',
+            'results': 2,
+            'list': [
+                "www.google.com",
+                "www.w3schrools.com",
+                "www.netflix.com"
+            ]
+        }
     return JsonResponse(response)
+    
     
 @csrf_exempt
 def siteretrieve(request):
