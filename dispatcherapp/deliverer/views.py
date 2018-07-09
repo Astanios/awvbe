@@ -8,9 +8,14 @@ from rest_framework.parsers import JSONParser
 from deliverer.models import Website
 from deliverer.serializers import WebsiteSerializer
 from django.http import HttpResponse
+from solrcloudpy.connection import SolrConnection
+
 import datetime
 import json
 import re
+
+conn = SolrConnection(server=["localhost:8987","localhost:7578"], detect_live_nodes=False, user=None, password=None, timeout=10)
+coll = conn['archiveWebVenezuela']
 
 class JSONResponse(HttpResponse):
     """
@@ -35,13 +40,16 @@ def home(request):
 @csrf_exempt
 def jsontest(request):
     data = json.loads(request.body)
-    if matchSite(data['query']):
+    query = data['query']
+    if matchSite(query):
         response = {
             'type': 'url',
-            'url': data['query'],
-            'versions': 2,
+            'url': query,
+            'versions': 4,
             'list': [
                 datetime.datetime.now(),
+                datetime.datetime(2018,3, 13, 0, 0),
+                datetime.datetime(2018,5, 20, 0, 0),
                 datetime.datetime(2009,3, 13, 0, 0)
             ]
         }
