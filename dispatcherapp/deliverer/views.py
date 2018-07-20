@@ -9,7 +9,7 @@ from deliverer.models import Website
 from deliverer.serializers import WebsiteSerializer
 from django.http import HttpResponse
 from solrcloudpy.connection import SolrConnection
-from urllib.request import urlopen
+from os import walk
 
 import datetime, json, re, glob, os
 global log
@@ -89,28 +89,7 @@ def siteretrieve(request):
     for root, dirs, files in os.walk('../../indexadorsolr/scriptIndexador/'):
         if aux in files:
             aux = os.path.join(root, aux)
+    F = open(aux, 'rb')
+    doc = F.read()
 
-    with urlopen(aux) as url:
-        s = url.read()
-
-    print(s)
-
-
-    '''
-
-    for (dirpath, dirnames, filenames) in walk('../../indexadorsolr/scriptIndexador/'):
-        for files in filenames:
-            #print(files)
-            #log.write(str(files)+'\n')
-            if str(files).find(aux):
-                #print ('encontrado!')
-                #aux = dirpath
-                print(aux)
-                break
-    print(aux)
-    '''
-    now = datetime.datetime.now()
-    html = "<html><head><style>body{color:blue;}</style></head><body>It is now %s.</body></html>" % now
-    doc = '<!DOCTYPE html><html><head><style>div.container{width: 100%; border: 1px solid gray;}header, footer{padding: 1em; color: white; background-color: black; clear: left; text-align: center;}nav{float: left; max-width: 160px; margin: 0; padding: 1em;}nav ul{list-style-type: none; padding: 0;}nav ul a{text-decoration: none;}article{margin-left: 170px; border-left: 1px solid gray; padding: 1em; overflow: hidden;}</style></head><body><div class="container"><header> <h1>City Gallery</h1></header> <nav> <ul> <li><a href="#">London</a></li><li><a href="#">Paris</a></li><li><a href="#">Tokyo</a></li></ul></nav><article> <h1>London</h1> <p>London is the capital city of England. It is the most populous city in the United Kingdom, with a metropolitan area of over 13 million inhabitants.</p><p>Standing on the River Thames, London has been a major settlement for two millennia, its history going back to its founding by the Romans, who named it Londinium.</p></article><footer>Copyright &copy; W3Schools.com</footer></div></body></html>'
-    
     return HttpResponse(doc)
