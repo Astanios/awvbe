@@ -10,6 +10,7 @@ from deliverer.serializers import WebsiteSerializer
 from django.http import HttpResponse
 from solrcloudpy.connection import SolrConnection
 from os import walk
+from bs4 import BeautifulSoup
 
 import datetime, json, re, glob, os
 global log
@@ -49,31 +50,37 @@ def jsontest(request):
         aux= respuesta.result.response['docs']
         urlsList = []
         dateList = []
+        warcList = []
         for entry in aux:
             tempmonth = str(entry['month']).replace('[','').replace(']','')
             tempday = str(entry['day']).replace('[','').replace(']','')
             aux = str(entry['year']).replace('[','').replace(']','') + '-' + ('0' if int(tempmonth) < 10 else '') + tempmonth + '-' + ('0' if int(tempday) < 10 else '') + tempday
             dateList.append(aux)
             urlsList.append(entry['URL'])
+            warcList.append(entry['nameWarc'])
         response = {
             'type': 'url',
             'url': query,
             'versions': len(aux),
             'list': dateList,
-            'urlsList': urlsList
+            'urlsList': urlsList,
+            'warcList': warcList
         }
     else:
         param=  'URL:*'+query+'*'
         respuesta = coll.search({'q':param})
         aux = respuesta.result.response['docs']
+
         urlsList = []
         for entry in aux:
             urlsList.append(entry['URL'])
+            warcList.append(entry['nameWarc'])
         response = {
             'type': 'keyword',
             'keywords': query,
             'versions': len(aux),
-            'list': urlsList
+            'list': urlsList,
+            'warcList': warcList
         }
     
     return JsonResponse(response)
@@ -85,11 +92,14 @@ def siteretrieve(request):
     query = ''.join(data['site_version'])
     aux = query[(query.rfind('/'))+1:]
     aux = aux[:40] + '.html'
-    
-    for root, dirs, files in os.walk('../../indexadorsolr/scriptIndexador/'):
-        if aux in files:
-            aux = os.path.join(root, aux)
-    F = open(aux, 'rb')
-    doc = F.read()
+
+    if aux == '.html':
+        aux = 'index.html'
+        
+    route = '../../indexadorsolr/scriptIndexador/'  + query.replace('http://', 'http/').replace('.warc.gz', '') + aux
+    print(route)
+
+    F = open(route, 'rb')
+    doc = BeautifulSoup(F, "html.parser")
 
     return HttpResponse(doc)
